@@ -3,6 +3,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.interactions.DoubleClickAction;
 
+import java.sql.Time;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -13,6 +14,7 @@ import java.lang.System;
  */
 public class Surfer {
     String currentSource;
+    float score;
     WebDriver driver;
     Map<String,String> sources;
     Map<String, Map<String, Double>> content;
@@ -41,28 +43,18 @@ public class Surfer {
         currentSource = source;
     }
 
-    float waitUntilSignal() throws InterruptedException {
-        float start = System.currentTimeMillis();
-        //TODO get signal from emotiv, handle it
-        TimeUnit.SECONDS.sleep(4);
-        return System.currentTimeMillis() - start;
+    void start()
+    {
+        score = System.currentTimeMillis();
+        nextContent();
     }
 
-    void surf() throws Exception
+    void next() throws Exception
     {
-        float score;
-        for(int i = 0; i < 5; i++)
-        {
-            nextContent();
-            score = waitUntilSignal();
-            content.get(currentSource).put(driver.getCurrentUrl(), (double) score);
-            System.out.println(driver.getCurrentUrl());
-        }
-    }
-
-    public static void main(String[] args) throws Exception
-    {
-        Surfer s = new Surfer();
-        s.surf();
+        score = System.currentTimeMillis() - score;
+        content.get(currentSource).put(driver.getCurrentUrl(), (double) score);
+        nextContent();
+        score = System.currentTimeMillis();
+        System.out.println(driver.getCurrentUrl());
     }
 }

@@ -1,13 +1,16 @@
 import com.emotiv.Iedk.Edk;
 import com.emotiv.Iedk.EdkErrorCode;
 import com.sun.jna.Pointer;
+import com.sun.jna.ptr.DoubleByReference;
 import com.sun.jna.ptr.IntByReference;
+
+import java.util.ArrayDeque;
 
 /**
  * Created by shureedkabir on 4/9/16.
  */
 public class motion {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         Pointer eEvent = Edk.INSTANCE.IEE_EmoEngineEventCreate();
         Pointer eState = Edk.INSTANCE.IEE_EmoStateCreate();
         IntByReference userID = null;
@@ -34,6 +37,16 @@ public class motion {
         System.out.println("Start receiving Motion Data!");
         System.out.println("COUNTER, GYROX, GYROY, GYROZ, ACCX, ACCY, ACCZ, MAGX, "
                 + "MAGY, MAGZ, TIMESTAMP");
+
+        ArrayDeque<Double> que = new ArrayDeque<>(5);
+        for (int i = 0; i < 5; i++) {
+            que.add(8000d);
+        }
+
+        Surfer surfer = new Surfer();
+        surfer.start();
+        boolean spike = false;
+
         while (true) {
             state = Edk.INSTANCE.IEE_EngineGetNextEvent(eEvent);
 
@@ -61,26 +74,36 @@ public class motion {
                 if (nSamplesTaken != null) {
                     if (nSamplesTaken.getValue() != 0) {
 
-//                        System.out.print("Updated: ");
-//                        System.out.println(nSamplesTaken.getValue());
                         StringBuilder sb = new StringBuilder();
                         sb.append("\r");
-
                         double[] data = new double[nSamplesTaken.getValue()];
                         for (int sampleIdx = 0; sampleIdx < nSamplesTaken
-                                .getValue(); ++sampleIdx) {
-                            for (int i = 0; i < 4; i++) { //there are 10 total i for each column of data
+                                .getValue(); ++sampleIdx) { //1 - 4 for acceleration
+                            //
+                            for (int i = 1; i < 4; i++) { //there are 10 total i for each column of data
 
                                 Edk.INSTANCE.IEE_MotionDataGet(hMotionData, i, data,
                                         nSamplesTaken.getValue());
                                 sb.append(data[sampleIdx]);
                                 sb.append(" ");
-//                                System.out.print(data[sampleIdx]);
-//                                System.out.print(", ");
+
+                                double diff = data[sampleIdx] - que.remove();
+                                if (Math.abs(diff) > 1600){
+                                    surfer.next();
+                                    System.out.println("spike: "+diff);
+                                    que.add(8000d);
+                                    Thread.sleep(1000);
+                                    spike = true;
+
+                                } else {
+                                    que.add(data[sampleIdx]);
+                                }
                             }
                             System.out.print(sb.toString());
-
-//                            System.out.println();
+                            if (spike){
+                                spike = false;
+                                sampleIdx = nSamplesTaken.getValue();
+                            }
                         }
                     }
                 }
