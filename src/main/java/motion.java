@@ -63,19 +63,24 @@ public class motion {
 
 //                        System.out.print("Updated: ");
 //                        System.out.println(nSamplesTaken.getValue());
-                        String out;
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("\r");
 
                         double[] data = new double[nSamplesTaken.getValue()];
                         for (int sampleIdx = 0; sampleIdx < nSamplesTaken
                                 .getValue(); ++sampleIdx) {
-                            for (int i = 0; i < 10; i++) {
+                            for (int i = 0; i < 4; i++) { //there are 10 total i for each column of data
 
                                 Edk.INSTANCE.IEE_MotionDataGet(hMotionData, i, data,
                                         nSamplesTaken.getValue());
-                                System.out.print(data[sampleIdx]);
-                                System.out.print(", ");
+                                sb.append(data[sampleIdx]);
+                                sb.append(" ");
+//                                System.out.print(data[sampleIdx]);
+//                                System.out.print(", ");
                             }
-                            System.out.println();
+                            System.out.print(sb.toString());
+
+//                            System.out.println();
                         }
                     }
                 }
