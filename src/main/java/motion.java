@@ -9,6 +9,8 @@ import java.util.ArrayDeque;
 /**
  * Created by shureedkabir on 4/9/16.
  */
+
+//Jake pushed for hackathon
 public class motion {
     public static void main(String[] args) throws Exception {
         Pointer eEvent = Edk.INSTANCE.IEE_EmoEngineEventCreate();
@@ -38,8 +40,8 @@ public class motion {
         System.out.println("COUNTER, GYROX, GYROY, GYROZ, ACCX, ACCY, ACCZ, MAGX, "
                 + "MAGY, MAGZ, TIMESTAMP");
 
-        ArrayDeque<Double> que = new ArrayDeque<>(5);
-        for (int i = 0; i < 5; i++) {
+        ArrayDeque<Double> que = new ArrayDeque<>(10);
+        for (int i = 0; i < 10; i++) {
             que.add(8000d);
         }
 
@@ -78,19 +80,19 @@ public class motion {
                         sb.append("\r");
                         double[] data = new double[nSamplesTaken.getValue()];
                         for (int sampleIdx = 0; sampleIdx < nSamplesTaken
-                                .getValue(); ++sampleIdx) { //1 - 4 for acceleration
-                            //
-                            for (int i = 1; i < 4; i++) { //there are 10 total i for each column of data
-
-                                Edk.INSTANCE.IEE_MotionDataGet(hMotionData, i, data,
+                                .getValue(); ++sampleIdx) {
+                           // for (int i = 1; i < 4; i++) { //there are 10 total i for each column of data
+                            //TESET GYROSCOPIC MOVEMENT IN X DIRECTION (rotate head left or right)
+                                Edk.INSTANCE.IEE_MotionDataGet(hMotionData, 1, data,    //substitute 1 for i
                                         nSamplesTaken.getValue());
                                 sb.append(data[sampleIdx]);
                                 sb.append(" ");
 
                                 double diff = data[sampleIdx] - que.remove();
-                                if (Math.abs(diff) > 1600){
+                                if (Math.abs(diff) > 1100){
                                     surfer.next();
                                     System.out.println("spike: "+diff);
+                                    System.out.println(" on index " + 1);          //substitute 1 for i
                                     que.add(8000d);
                                     Thread.sleep(1000);
                                     spike = true;
@@ -98,12 +100,12 @@ public class motion {
                                 } else {
                                     que.add(data[sampleIdx]);
                                 }
-                            }
                             System.out.print(sb.toString());
                             if (spike){
                                 spike = false;
                                 sampleIdx = nSamplesTaken.getValue();
                             }
+                            //END OF GYROSCOPIC X TEST
                         }
                     }
                 }
